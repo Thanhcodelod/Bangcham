@@ -1,0 +1,90 @@
+<html lang="vi">
+<head>
+    <title>Bảng Chấm Công Tháng</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        function generateTable() {
+            const monthYear = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
+            document.getElementById('monthYear').innerText = `BẢNG CHẤM CÔNG THÁNG ${monthYear.toUpperCase()}`;
+
+            const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+            const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+
+            const headerRow = document.getElementById('headerRow');
+            const dayOfWeekRow = document.getElementById('dayOfWeekRow');
+            const inputRow = document.getElementById('inputRow');
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                const date = new Date(new Date().getFullYear(), new Date().getMonth(), i);
+                const dayOfWeek = daysOfWeek[date.getDay()];
+
+                headerRow.innerHTML += `<th class="border border-gray-400 px-2 py-1 text-sm">${i}</th>`;
+                dayOfWeekRow.innerHTML += `<td class="border border-gray-400 px-2 py-1 text-sm">${dayOfWeek}</td>`;
+                inputRow.innerHTML += `
+                    <td class="border border-gray-400">
+                        <input type="text" class="w-full text-center text-sm" value="0" oninput="calculateTotal()" />
+                    </td>`;
+            }
+
+            headerRow.innerHTML += `<th class="border border-gray-400 px-2 py-1 text-sm">Tổng</th>`;
+            dayOfWeekRow.innerHTML += `<td class="border border-gray-400 px-2 py-1 text-sm"></td>`;
+            inputRow.innerHTML += `<td id="total" class="border border-gray-400 px-2 py-1 text-sm">0</td>`;
+        }
+
+        function calculateTotal() {
+            const inputs = document.querySelectorAll('#inputRow input');
+            let total = Array.from(inputs).reduce((sum, input) => sum + (parseFloat(input.value) || 0), 0);
+            document.getElementById('total').innerText = total;
+        }
+
+        function saveData() {
+            const data = Array.from(document.querySelectorAll('#inputRow input')).map(input => input.value);
+            localStorage.setItem('attendanceData', JSON.stringify(data));
+            alert('Data saved successfully!');
+        }
+
+        function loadData() {
+            const data = JSON.parse(localStorage.getItem('attendanceData') || '[]');
+            document.querySelectorAll('#inputRow input').forEach((input, index) => {
+                input.value = data[index] || '0';
+            });
+            calculateTotal();
+        }
+
+        window.onload = function() {
+            generateTable();
+            loadData();
+        };
+    </script>
+</head>
+<body class="bg-gray-100 flex flex-col items-center min-h-screen">
+
+    <div class="w-full overflow-x-auto px-2">
+        <table id="attendanceTable" class="table-auto border-collapse border border-gray-400 min-w-[800px]">
+            <thead>
+                <tr>
+                    <th colspan="33" id="monthYear" class="border border-gray-400 px-2 py-1 text-center text-lg"></th>
+                </tr>
+                <tr id="headerRow">
+                    <th class="border border-gray-400 px-2 py-1 text-sm">Ngày</th>
+                </tr>
+                <tr id="dayOfWeekRow">
+                    <td class="border border-gray-400 px-2 py-1 text-sm">Thứ</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr id="inputRow">
+                    <td class="border border-gray-400 px-2 py-1 text-sm">Chấm</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <button onclick="saveData()" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded">
+        Save
+    </button>
+
+</body>
+</html>
